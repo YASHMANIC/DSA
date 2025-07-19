@@ -1,8 +1,8 @@
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.ArrayList;
-
-class Pair{
+public class graphs {
+  static class Pair{
     int row;
     int col;
     int time;
@@ -13,15 +13,33 @@ class Pair{
     }
 }
 
-class isCycle_Pair {
-    int child;
-    int parent;
-    public isCycle_Pair(int child,int parent){
-        this.child = child;
-        this.parent = parent;
+    static class isCycle_Pair {
+        int child;
+        int parent;
+        public isCycle_Pair(int child,int parent){
+            this.child = child;
+            this.parent = parent;
+        }
     }
-}
-public class graphs {
+
+    static class nearest_Pair{
+            int row;
+            int col;
+            int dis;
+            public nearest_Pair(int row,int col,int dis){
+                this.row = row;
+                this.col = col;
+                this.dis = dis;
+            }
+    }
+
+    static int[][] directions = {
+                {0, 1},   // right
+                {1, 0},   // down
+                {-1, 0},  // up
+                {0, -1}   // left
+    };
+    
     public static void main(String[] args) {
         // Flood-Fill Algorithm
         int [][] image = {
@@ -73,15 +91,24 @@ public class graphs {
         } else {
             System.out.println("No cycle detected in the graph");
         }
+        int[][] nearestGrid = {
+            {0, 0, 1},
+            {0, 0, 0},
+            {1, 0, 0}
+        };
+        int[][] nearestDistances = nearest(nearestGrid);
+        System.out.println("Nearest distances from 1s:");
+        for(int i=0;i<nearestDistances.length;i++){
+            for(int j=0;j<nearestDistances[i].length;j++){
+                System.out.print(nearestDistances[i][j]);
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
     }
+
     private static int[][] floodFill(int[][] image,int sr,int sc,int newColor){
         int[][] ans = image;
-        int[][] directions = {
-            {0, 1},   // right
-            {1, 0},   // down
-            {-1, 0},  // up
-            {0, -1}   // left
-        };
         int iniColor = image[sr][sc];
         floodFill_helper(image,ans,sr, sc,newColor,directions,iniColor);
         return ans;
@@ -119,12 +146,6 @@ public class graphs {
             }
         }
         int tm = 0;
-        int[][] directions = {
-            {0, 1},   // right
-            {1, 0},   // down
-            {-1, 0},  // up
-            {0, -1}   // left
-        };
         int cnt = 0;
         while(!q.isEmpty()){
             int r = q.peek().row;
@@ -185,5 +206,36 @@ public class graphs {
         }
         return false;
     }
-
+    public static int[][] nearest(int[][] grid){
+        int n = grid.length;
+        int m = grid[0].length;
+        int[][] dis = new int[n][m];
+        boolean[][] vis = new boolean[n][m];
+        Queue<nearest_Pair> q = new LinkedList<>();
+        for(int row=0;row<n;row++){
+            for(int col=0;col<m;col++){
+                if(grid[row][col] == 1){
+                    vis[row][col] = true;
+                    q.offer(new nearest_Pair(row,col,0));
+                }
+            }
+        }
+        while(!q.isEmpty()){
+            int row = q.peek().row;
+            int col = q.peek().col;
+            int val = q.peek().dis;
+            q.remove();
+            dis[row][col] = val;
+            for(int i=0;i<directions.length;i++){
+                int nrow = row+directions[i][0];
+                int ncol = col+directions[i][1];
+                if(nrow >= 0 && ncol >=0 && nrow < n && ncol < m && 
+                !vis[nrow][ncol]){
+                    q.offer(new nearest_Pair(nrow,ncol,val+1));
+                    vis[nrow][ncol] = true;
+                }
+            }
+        }
+        return dis;
+    }
 }
