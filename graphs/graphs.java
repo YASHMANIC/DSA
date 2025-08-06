@@ -1,17 +1,16 @@
-import java.util.Queue;
+import java.util.*;
 import java.util.LinkedList;
-import java.util.ArrayList;
 public class graphs {
-  static class Pair{
-    int row;
-    int col;
-    int time;
-    public Pair(int row,int col,int time){
-        this.row = row;
-        this.col = col;
-        this.time = time;
+    static class Pair{
+        int row;
+        int col;
+        int time;
+        public Pair(int row,int col,int time){
+            this.row = row;
+            this.col = col;
+            this.time = time;
+        }
     }
-}
 
     static class isCycle_Pair {
         int child;
@@ -105,8 +104,43 @@ public class graphs {
             }
             System.out.println();
         }
+        //eventualSafeNodes
+        int graph[][] = {
+            {1, 2},
+            {2, 3},
+            {5},
+            {0},
+            {5},
+            {},
+        };
+        List<Integer> safeNodes = eventualSafeNodes(graph);
+        System.out.println("Safe Nodes Are");
+        for(int i: safeNodes){
+            System.out.println(i);
+        }
+        //Topological Sort
+        int[][] topoGraph = {
+            {5, 2}, {5, 0}, {4, 0}, {4, 1}, {2, 3}, {3, 1}
+        };
+        List<Integer> topoSorted = topoSort(topoGraph.length,topoGraph);
+        System.out.println("Topological Sort of the graph:");
+        for(int i: topoSorted){
+            System.out.print(i + " ");
+        }
+        // Course Schedule
+        int n = 4;
+        int[][] prerequisites = {
+            {1, 0},
+            {2, 1},
+            {3, 2}
+        };
+        boolean canFinishCourses = canFinish(n, prerequisites);
+        if(canFinishCourses) {
+            System.out.println("\nAll courses can be finished.");
+        } else {
+            System.out.println("\nNot all courses can be finished due to cyclic dependencies.");    
     }
-
+}
     private static int[][] floodFill(int[][] image,int sr,int sc,int newColor){
         int[][] ans = image;
         int iniColor = image[sr][sc];
@@ -237,5 +271,118 @@ public class graphs {
             }
         }
         return dis;
+    }
+    public static List<Integer> eventualSafeNodes(int[][] graph) {
+        List<List<Integer>> list = new ArrayList<>();
+        int V = graph.length;
+        for(int i=0;i<V;i++){
+            list.add(new ArrayList<>());
+        }
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < graph[i].length; j++) {
+                list.get(i).add(graph[i][j]);
+            }
+        }
+        boolean[] vis = new boolean[V];
+        boolean[] pathVis = new boolean[V];
+        boolean[] check = new boolean[V];
+        for(int i=0;i<V;i++){
+            if(!vis[i]){
+                eventualSafeNodes_helper(i,list,vis,pathVis,check);
+            }
+        }
+        List<Integer> result = new ArrayList<>();
+        for(int i=0;i<V;i++){
+            if(check[i]) result.add(i);
+        }
+        return result;
+    }
+    private static boolean eventualSafeNodes_helper(int node,List<List<Integer>> list,boolean[] vis,
+    boolean[] pathVis,boolean[] check){
+        vis[node]  = true;
+        pathVis[node] = true;
+        for(int it: list.get(node)){
+            if(!vis[it]){
+                if(eventualSafeNodes_helper(it,list,vis,pathVis,check)) return true;
+            }
+            else if(pathVis[it]) return true;
+        }
+        pathVis[node] = false;
+        check[node] = true;
+        return false;
+    }
+    private static void topoSort_helper(int node,boolean[] vis,Stack<Integer> st,
+    List<List<Integer>> adj){
+        vis[node] = true;
+        for(Integer i : adj.get(node)){
+            if(!vis[i]){
+                topoSort_helper(i,vis,st,adj);
+            }
+        }
+        st.push(node);
+    }
+    public static ArrayList<Integer> topoSort(int V, int[][] edges) {
+        // code here
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+
+        // Convert edge list to adjacency list
+        for (int[] edge : edges) {
+            int u = edge[0], v = edge[1];
+            adj.get(u).add(v);  // u -> v
+        }
+        boolean[] vis = new boolean[V];
+        Stack<Integer> st = new Stack<>();
+        for(int i=0;i<V;i++){
+            if(!vis[i]){
+                topoSort_helper(i,vis,st,adj);
+            }
+        }
+        ArrayList<Integer> ans = new ArrayList<>();
+        while(!st.isEmpty()){
+            ans.add(st.peek());
+            st.pop();
+        }
+        return ans;
+    }
+    public static boolean canFinish(int n, int[][] prerequisites) {
+        @SuppressWarnings("unchecked")
+        List<Integer>[] adj = new List[n];
+        int[] indegree = new int[n];
+        List<Integer> ans = new ArrayList<>();
+
+        for (int[] pair : prerequisites) {
+            int course = pair[0];
+            int prerequisite = pair[1];
+            if (adj[prerequisite] == null) {
+                adj[prerequisite] = new ArrayList<>();
+            }
+            adj[prerequisite].add(course);
+            indegree[course]++;
+        }
+        Queue<Integer> queue = new LinkedList<>();
+        for (int i = 0; i < n; i++) {
+            if (indegree[i] == 0) {
+                queue.offer(i);
+            }
+        }
+
+        while (!queue.isEmpty()) {
+            int current = queue.poll();
+            ans.add(current);
+
+            if (adj[current] != null) {
+                for (int next : adj[current]) {
+                    indegree[next]--;
+                    if (indegree[next] == 0) {
+                        queue.offer(next);
+                    }
+                }
+            }
+        }
+
+        return ans.size() == n;
     }
 }

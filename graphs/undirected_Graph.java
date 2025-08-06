@@ -1,6 +1,14 @@
 import java.util.*;
 import java.util.LinkedList;
 public class undirected_Graph {
+    class Pair{
+        int child;
+        int parent;
+        public Pair(int child,int parent){
+            this.child = child;
+            this.parent = parent;
+        }
+    }
         int V; // number of vertices/nodes
         ArrayList<ArrayList<Integer>> adjList = new ArrayList<>();
         undirected_Graph(int V) {
@@ -62,7 +70,7 @@ public class undirected_Graph {
             }
         }
     }
-
+    
     ArrayList<Integer> dfs(){
         boolean[] visited = new boolean[V+1];
         ArrayList<Integer> dfs = new ArrayList<>();
