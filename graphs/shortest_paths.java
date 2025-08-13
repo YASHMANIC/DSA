@@ -1,8 +1,18 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
+import java.util.Queue;
+import java.util.LinkedList;;
 
-public class shortest_path_in_dag {
+public class shortest_paths {
+    static class ug_Pair{
+        int node;
+        int dist;
+        public ug_Pair(int node,int dist){
+            this.node = node;
+            this.dist = dist;
+        }
+    }
     static class Pair {
         int v;
         int wt;
@@ -22,10 +32,57 @@ public class shortest_path_in_dag {
             {2, 3, 3},
             {3, 4, 1}
         };
-        int[] result = shortestPath(V, E, edges);
-        System.out.println(Arrays.toString(result)); // Output: [0, 2,
+        int[] result = shortestPathInDAG(V, E, edges);
+        System.out.println(Arrays.toString(result)); 
+        //Undirected Graph
+        ArrayList<ArrayList<Integer>> adj = new ArrayList<>();
+
+        int[][] data = {
+            {1, 3},
+            {0, 2},
+            {1, 6},
+            {0, 4},
+            {3, 5},
+            {4, 6},
+            {2, 5, 7, 8},
+            {6, 8},
+            {7, 6}
+        };
+
+        for (int[] row : data) {
+            ArrayList<Integer> list = new ArrayList<>();
+            for (int val : row) {
+                list.add(val);
+            }
+            adj.add(list);
+        }
+        int[] result2 = shortestPathInUg(adj, 0);
+        System.out.println(Arrays.toString(result2));
     }
-    public static int[] shortestPath(int V, int E, int[][] edges) {
+    private static int[] shortestPathInUg(ArrayList<ArrayList<Integer>> adj, int src) {
+        // code here
+        int[] res = new int[adj.size()];
+        Queue<ug_Pair> q = new LinkedList<>();
+        q.offer(new ug_Pair(src,0));
+        int inf = (int)1e9; // 1e9 = 1000000000
+        Arrays.fill(res,inf);
+        res[src] = 0;
+        while(!q.isEmpty()){
+            int node = q.peek().node;
+            q.poll();
+            for(Integer neighbour:adj.get(node)){
+                if(res[node] + 1 < res[neighbour]){
+                    res[neighbour] = 1 + res[node];
+                    q.offer(new ug_Pair(neighbour, res[neighbour]));
+                }
+            }
+        }
+        for(int i=0;i<res.length;i++){
+            if(res[i] == inf) res[i] = -1;
+        }
+        return res;
+    }
+    private static int[] shortestPathInDAG(int V, int E, int[][] edges) {
         // Step 1: Build adjacency list
         ArrayList<ArrayList<Pair>> adj = new ArrayList<>();
         for (int i = 0; i < V; i++) {
